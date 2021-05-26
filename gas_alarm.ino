@@ -7,30 +7,29 @@
 // CO2 Sensor (MG811)
 MG811 gas = MG811(A0);
 // RGB LED (KY-016)
-#define     LEDr            9   ; // ~
-#define     LEDg            10  ; // ~
-#define     LEDb            11  ; // ~
+#define     LEDr            9   // ~
+#define     LEDg            10  // ~
+#define     LEDb            11  // ~
 // LCD (I2C LCD 1602)
 LiquidCrystal_I2C LCD(0x27, 16, 2);
 // Buzzer (Piezo Buzzer Active)
-#define     buzzer          ;
+#define     buzzer          
 // Motor Driver (SZH-MDBL-002)
-#define     fan1            5   ; // ~
-#define     fan2            6   ; // ~
+#define     fan1            5   // ~
+#define     fan2            6   // ~
 // Button
-#define     buttonLCD       ;
-#define     buttonStop      ;
-#define     buttonMute      ;
+#define     buttonLCD       
+#define     buttonStop      
+#define     buttonMute      
 
-// 초기화
-int gasDensArray[5] = { 0, 0, 0, 0, 0 };
+int gasDensArray[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0};
 int gasLevel = 0;
-unsigned long timerLCDPrev = millis();
-unsigned long timerLEDPrev = millis();
-unsigned long timerStopPrev = millis();
-unsigned long timerBuzzPrev = millis();
 int countMute = 0;
 int fanOn = 0;
+unsigned long timerLCDPrev;
+unsigned long timerLEDPrev;
+unsigned long timerStopPrev;
+unsigned long timerBuzzPrev;
 
 float v400 = 4.535;
 float v40000 = 3.206;
@@ -59,6 +58,11 @@ void setup()
     pinMode(buttonStop, INPUT_PULLUP);
     pinMode(buttonMute, INPUT_PULLUP);
     gas.begin(v400, v40000);
+
+    timerLCDPrev = millis();
+    timerLEDPrev = millis();
+    timerStopPrev = millis();
+    timerBuzzPrev = millis();
 }
 
 void loop() 
@@ -81,16 +85,16 @@ void loop()
 
 void checkGasLevel(float gasDens) {
     // averaging
-	for (int i = 0; i < 5 - 1; i++) { // 저장된 값을 한칸씩 앞으로 당김
+	for (int i = 0; i < 10 - 1; i++) { // 저장된 값을 한칸씩 앞으로 당김
 		gasDensArray[i] = gasDensArray[i + 1];
 	}
-	gasDensArray[4] = gasDens; // 현재 기체 ppm 저장
+	gasDensArray[9] = gasDens; // 현재 기체 ppm 저장
 
 	int sum = 0;
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 10; i++) {
 		sum = sum + gasDensArray[i];
 	}
-    float aveGasDens = (float)sum / 5; // loop 5번 이상 돌아야 정상 작동
+    float aveGasDens = (float)sum / 10; // loop 10번 이상 돌아야 정상 작동
     
     // hysteresis : 경계 문턱 2개 -> 상 문턱 : 알림 단계 높임 / 하 문턱 : 알림 단계 낮춤
     if (aveGasDens < 650 && gasLevel >= 1) {
