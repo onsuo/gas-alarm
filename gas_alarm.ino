@@ -85,15 +85,15 @@ void loop()
 
 void checkGasLevel(float gasDens) {
     // averaging
-	for (int i = 0; i < 10 - 1; i++) { // 저장된 값을 한칸씩 앞으로 당김
-		gasDensArray[i] = gasDensArray[i + 1];
-	}
-	gasDensArray[9] = gasDens; // 현재 기체 ppm 저장
+    for (int i = 0; i < 10 - 1; i++) { // 저장된 값을 한칸씩 앞으로 당김
+        gasDensArray[i] = gasDensArray[i + 1];
+    }
+    gasDensArray[9] = gasDens; // 현재 기체 ppm 저장
 
-	int sum = 0;
-	for (int i = 0; i < 10; i++) {
-		sum = sum + gasDensArray[i];
-	}
+    int sum = 0;
+    for (int i = 0; i < 10; i++) {
+        sum = sum + gasDensArray[i];
+    }
     float aveGasDens = (float)sum / 10; // loop 10번 이상 돌아야 정상 작동
     
     // hysteresis : 경계 문턱 2개 -> 상 문턱 : 알림 단계 높임 / 하 문턱 : 알림 단계 낮춤
