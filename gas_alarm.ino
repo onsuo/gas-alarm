@@ -135,7 +135,8 @@ void printLCD(int gasLevel, int isMute) {
         LCD.print("CO2");
         LCD.setCursor(0, 1);
         LCD.print(gasLevel);
-        LCD.print(" ppm");
+        LCD.setCursor(5, 1);
+        LCD.print("ppm");
     }
 
     if (isMute == 1) {
