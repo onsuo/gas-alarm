@@ -39,7 +39,7 @@ float v40000 = 3.206;
 int checkGasLevel();
 bool checkEmergency(int gasLevel);
 int checkLCDMode();
-void printLCD(int gasLevel,int mute, int LCDMode);
+void printLCD(int gasLevel,int isMute, int LCDMode);
 void printRGB(int r, int g, int b);
 void printLED(int gasLevel);
 bool checkStop();
@@ -79,7 +79,7 @@ void loop()
     bool isStop = checkStop(); // 알람 중단 확인, 중단 시간 확인
     isMute = checkMute(); // 무음모드 여부 확인
 
-    printLCD(gasLevel, mute, LCDMode); // LCD 정보 제공
+    printLCD(gasLevel, isMute, LCDMode); // LCD 정보 제공
     printLED(gasLevel); // LED 점멸
     if ((isStop == 0 && isMute == 0) || isEmergency == 1) {
         printBuzz(gasLevel); // 가스 농도에 따른 버저 울림
@@ -139,7 +139,7 @@ int checkLCDMode() {
     }
 }
 
-void printLCD(int gasLevel, int mute, int LCDMode) {
+void printLCD(int gasLevel, int isMute, int LCDMode) {
     if (LCDMode == 0) {
         unsigned long tLCDPrint = millis();
         if (tLCDPrint - tLCDPrintPrev >= 500) {
@@ -157,10 +157,10 @@ void printLCD(int gasLevel, int mute, int LCDMode) {
         LCD.clear();
         LCD.setCursor(0, 0);
         LCD.print("Mute : ");
-        if (mute == 1) {
+        if (isMute == 1) {
             LCD.print("ON");
         }
-        else if (mute == 0) {
+        else if (isMute == 0) {
             LCD.print("OFF");
         }
     }
