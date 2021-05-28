@@ -3,13 +3,15 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
-// **핀번호 설정 필요
+/*
+    핀번호 설정 필요
+*/
 // CO2 Sensor (MG811)
 MG811 gas = MG811(A0)
 // RGB LED (KY-016)
-#define     LED_R            9   // ~
-#define     LED_G            10  // ~
-#define     LED_B            11  // ~
+#define     LED_R           9   // ~
+#define     LED_G           10  // ~
+#define     LED_B           11  // ~
 // LCD (I2C LCD 1602)
 LiquidCrystal_I2C LCD(0x27, 16, 2);
 // Buzzer (Piezo Buzzer Active)
@@ -17,10 +19,10 @@ LiquidCrystal_I2C LCD(0x27, 16, 2);
 // Motor Driver (SZH-MDBL-002)
 #define     FAN1            5   // ~
 #define     FAN2            6   // ~
-// Btn
-#define     BTN_LCD       
-#define     BTN_STOP      
-#define     BTN_MUTE      
+// Button
+#define     BTN_LCD         
+#define     BTN_STOP        
+#define     BTN_MUTE        
 
 int gasDensArray[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 };
 int gasLevel = 0;
@@ -38,8 +40,7 @@ float v40000 = 3.206;
 
 int checkGasLevel();
 bool checkEmergency(int gasLevel);
-int checkLCDMode();
-void printLCD(int gasLevel,int isMute, int LCDMode);
+void printLCD(int gasLevel,int isMute);
 void printRGB(int r, int g, int b);
 void printLED(int gasLevel);
 bool checkStop();
@@ -51,9 +52,9 @@ void setup()
 {
     Serial.begin(9600);
     pinMode(gas, INPUT);
-    pinMode(LEDr, OUTPUT);
-    pinMode(LEDg, OUTPUT);
-    pinMode(LEDb, OUTPUT);
+    pinMode(LED_R, OUTPUT);
+    pinMode(LED_G, OUTPUT);
+    pinMode(LED_B, OUTPUT);
     pinMode(BUZZER, OUTPUT);
     pinMode(FAN1, OUTPUT);
     pinMode(FAN2, OUTPUT);
@@ -75,11 +76,10 @@ void loop()
     gasLevel = checkGasLevel(gasDens); // 가스 농도 단계 확인
     bool isEmergency = checkEmergency(gasLevel); // 위급상황 확인
     
-    int LCDMode = checkLCDMode(); // LCD 모드 번호 확인
     bool isStop = checkStop(); // 알람 중단 확인, 중단 시간 확인
     isMute = checkMute(); // 무음모드 여부 확인
 
-    printLCD(gasLevel, isMute, LCDMode); // LCD 정보 제공
+    printLCD(gasLevel, isMute); // LCD 정보 제공
     printLED(gasLevel); // LED 점멸
     if ((isStop == 0 && isMute == 0) || isEmergency == 1) {
         manageBuzz(gasLevel); // 가스 농도에 따른 버저 울림
@@ -126,44 +126,28 @@ bool checkEmergency(int gasLevel) {
     return 0;
 }
 
-int checkLCDMode() {
-    unsigned long temptLCDMode = millis();
-    // 버튼 누름
-    if (digitalRead(BTN_LCD) == 0) {
-        tLCDMode = millis();
-        return 1;
-    }
-    // 2초 경과 후
-    else if (temptLCDMode - tLCDMode >= 2000) {
-        return 0;
-    }
-}
-
-void printLCD(int gasLevel, int isMute, int LCDMode) {
-    if (LCDMode == 0) {
-        unsigned long temptLCDPrint = millis();
-        if (temptLCDPrint - tLCDPrint >= 500) {
-            LCD.clear();
-            LCD.setCursor(0, 0);
-            LCD.print("CO2");
-            LCD.setCursor(0, 1);
-            LCD.print(gasLevel);
-            LCD.print(" ppm");
-
-            tLCDPrint = millis();
-        }
-    }
-    else if (LCDMode == 1) {
+void printLCD(int gasLevel, int isMute) {
+    unsigned long temptLCDPrint = millis();
+    if (temptLCDPrint - tLCDPrint >= 500) {
         LCD.clear();
         LCD.setCursor(0, 0);
-        LCD.print("Mute : ");
-        if (isMute == 1) {
-            LCD.print("ON");
-        }
-        else if (isMute == 0) {
-            LCD.print("OFF");
-        }
+        LCD.print("CO2");
+        LCD.setCursor(0, 1);
+        LCD.print(gasLevel);
+        LCD.print(" ppm");
     }
+
+    if (isMute == 1) {
+        LCD.setCursor(15, 1);
+        LCD.print("M");
+    }
+    if (isMute == 0) {
+        LCD.setCursor(15, 1);
+        LCD.print(" ");
+    }
+
+    tLCDPrint = millis();
+
     return;
 }
 
@@ -235,6 +219,9 @@ void manageBuzz(int gasLevel) {
     int BuzzOn = 0;
     unsigned long temptBuzz = millis();
     unsigned long gap = temptBuzz - tBuzz;
+    /*
+        gap 기준을 조절하여 버저 점멸 주기 조절 가능
+    */
     if (gasLevel == 3) {
         if (gap >= 150 && BuzzOn == 0) {
             BuzzOn = 1;
