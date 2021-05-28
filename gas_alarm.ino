@@ -22,16 +22,16 @@ LiquidCrystal_I2C LCD(0x27, 16, 2);
 #define     BTN_STOP      
 #define     BTN_MUTE      
 
-int gasDensArray[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0};
+int gasDensArray[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 };
 int gasLevel = 0;
-bool isBtnMuteRelPrev = 1;
+bool isBtnMuteRel = 1;
 bool isMute = 0;
 bool isFanOn = 0;
-unsigned long tLCDModePrev;
-unsigned long tLCDPrintPrev;
-unsigned long tLEDPrev;
-unsigned long tStopPrev;
-unsigned long tBuzzPrev;
+unsigned long tLCDMode;
+unsigned long tLCDPrint;
+unsigned long tLED;
+unsigned long tBuzzStop;
+unsigned long tBuzz;
 
 float v400 = 4.535;
 float v40000 = 3.206;
@@ -44,8 +44,8 @@ void printRGB(int r, int g, int b);
 void printLED(int gasLevel);
 bool checkStop();
 bool checkMute();
-void printBuzz(int gasLevel);
-void printFan();
+void manageBuzz(int gasLevel);
+void manageFan();
 
 void setup() 
 {
@@ -62,11 +62,11 @@ void setup()
     pinMode(BTN_MUTE, INPUT_PULLUP);
     gas.begin(v400, v40000);
 
-    tLCDModePrev = millis();
-    tLCDPrintPrev = millis();
-    tLEDPrev = millis();
-    tStopPrev = millis();
-    tBuzzPrev = millis();
+    tLCDMode = millis();
+    tLCDPrint = millis();
+    tLED = millis();
+    tBuzzStop = millis();
+    tBuzz = millis();
 }
 
 void loop() 
@@ -82,9 +82,9 @@ void loop()
     printLCD(gasLevel, isMute, LCDMode); // LCD 정보 제공
     printLED(gasLevel); // LED 점멸
     if ((isStop == 0 && isMute == 0) || isEmergency == 1) {
-        printBuzz(gasLevel); // 가스 농도에 따른 버저 울림
+        manageBuzz(gasLevel); // 가스 농도에 따른 버저 울림
     }
-    printFan(); // 위급상황 -> 팬 작동(gasLevel 3 까지)
+    manageFan(); // 위급상황 -> 팬 작동(gasLevel 3 까지)
 }
 
 int checkGasLevel(float gasDens) {
@@ -127,22 +127,22 @@ bool checkEmergency(int gasLevel) {
 }
 
 int checkLCDMode() {
-    unsigned long tLCDMode = millis();
+    unsigned long temptLCDMode = millis();
     // 버튼 누름
     if (digitalRead(BTN_LCD) == 0) {
-        tLCDModePrev = millis();
+        tLCDMode = millis();
         return 1;
     }
     // 2초 경과 후
-    else if (tLCDMode - tLCDModePrev >= 2000) {
+    else if (temptLCDMode - tLCDMode >= 2000) {
         return 0;
     }
 }
 
 void printLCD(int gasLevel, int isMute, int LCDMode) {
     if (LCDMode == 0) {
-        unsigned long tLCDPrint = millis();
-        if (tLCDPrint - tLCDPrintPrev >= 500) {
+        unsigned long temptLCDPrint = millis();
+        if (temptLCDPrint - tLCDPrint >= 500) {
             LCD.clear();
             LCD.setCursor(0, 0);
             LCD.print("CO2");
@@ -150,7 +150,7 @@ void printLCD(int gasLevel, int isMute, int LCDMode) {
             LCD.print(gasLevel);
             LCD.print(" ppm");
 
-            tLCDPrintPrev = millis();
+            tLCDPrint = millis();
         }
     }
     else if (LCDMode == 1) {
@@ -175,15 +175,15 @@ void printRGB(int r, int g, int b) {
 
 void printLED(int gasLevel) {
     bool isLEDOn = 0;
-    unsigned long tLED = millis();
-    unsigned long gap = tLED - tLEDPrev;
+    unsigned long temptLED = millis();
+    unsigned long gap = temptLED - tLED;
     if (gap >= 300 && isLEDOn == 0) {
         isLEDOn = !isLEDOn;
-        tLEDPrev = millis();
+        tLED = millis();
     }
     else if (gap >= 1000 && isLEDOn == 1) {
         isLEDOn = !isLEDOn;
-        tLEDPrev = millis();
+        tLED = millis();
     }
 
     if (isLEDOn == 1) {
@@ -207,38 +207,38 @@ void printLED(int gasLevel) {
 }
 
 bool checkStop() {
-    unsigned long tStop = millis();
+    unsigned long temptBuzzStop = millis();
     // 버튼 누름
     if (digitalRead(BTN_STOP) == 0) {
-        tStopPrev = millis();
+        tBuzzStop = millis();
         return 1;
     }
     // 2분(120초) 경과 후
-    else if (tStop - tStopPrev >= 120000) {
+    else if (temptBuzzStop - tBuzzStop >= 120000) {
         return 0;
     }
 }
 
 bool checkMute() {
-    bool isBtnMuteRel = digitalRead(BTN_MUTE)
-    if (isBtnMuteRelPrev == 1 && isBtnMuteRel == 0) {
+    bool tempisBtnMuteRel = digitalRead(BTN_MUTE)
+    if (isBtnMuteRel == 1 && tempisBtnMuteRel == 0) {
         isMute = !isMute;
-        isBtnMuteRelPrev = 0;
+        isBtnMuteRel = 0;
     }
-    else if (btnMuteCurr == 1) {
-        isBtnMuteRelPrev = 1;
+    else if (tempisBtnMuteRel == 1) {
+        isBtnMuteRel = 1;
     }
     return isMute;
 }
 
-void printBuzz(int gasLevel) {
+void manageBuzz(int gasLevel) {
     int BuzzOn = 0;
-    unsigned long tBuzz = millis();
-    unsigned long gap = tBuzz - tBuzzPrev;
+    unsigned long temptBuzz = millis();
+    unsigned long gap = temptBuzz - tBuzz;
     if (gasLevel == 3) {
         if (gap >= 150 && BuzzOn == 0) {
             BuzzOn = 1;
-            tBuzzPrev = millis();
+            tBuzz = millis();
         }
         else if (gap >= 500 && isLEDOn == 1) {
             BuzzOn = 0;
@@ -248,7 +248,7 @@ void printBuzz(int gasLevel) {
     else if (gasLevel == 4) {
         if (gap >= 75 && BuzzOn == 0) {
             BuzzOn = 1;
-            tBuzzPrev = millis();
+            tBuzz = millis();
         }
         else if (gap >= 250 && isLEDOn == 1) {
             BuzzOn = 0;
@@ -265,8 +265,8 @@ void printBuzz(int gasLevel) {
     return;
 }
 
-void printFan() {
-    if (emergency == 1 || (isFanOn == 1 && gasLevel >=3)) {
+void manageFan() {
+    if (isEmergency == 1 || (isFanOn == 1 && gasLevel >=3)) {
         isFanOn = 1;
     }
     else if (gasLevel < 3) {
