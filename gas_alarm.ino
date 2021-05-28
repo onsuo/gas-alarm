@@ -5,6 +5,7 @@
 
 /*
     핀번호 설정 필요
+    적혀있는 핀 번호는 기본 설정값임
 */
 // CO2 Sensor (MG811)
 MG811 gas = MG811(A0)
@@ -161,6 +162,9 @@ void printLED(int gasLevel) {
     bool isLEDOn = 0;
     unsigned long temptLED = millis();
     unsigned long gap = temptLED - tLED;
+    /*
+        gap 기준을 조절하여 LED 점멸 주기 조절 가능
+    */
     if (gap >= 300 && isLEDOn == 0) {
         isLEDOn = !isLEDOn;
         tLED = millis();
