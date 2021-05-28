@@ -142,7 +142,7 @@ void printLCD(int gasLevel, int isMute) {
         LCD.setCursor(15, 1);
         LCD.print("M");
     }
-    if (isMute == 0) {
+    else if (isMute == 0) {
         LCD.setCursor(15, 1);
         LCD.print(" ");
     }
