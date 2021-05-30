@@ -133,19 +133,25 @@ void printLCD(int gasLevel, int isMute) {
         LCD.clear();
         LCD.setCursor(0, 0);
         LCD.print("CO2");
-        LCD.setCursor(0, 1);
+        LCD.setCursor(4, 0);
+        LCD.print("(Level: ")
+        LCD.setCursor(12, 0);
         LCD.print(gasLevel);
-        LCD.setCursor(5, 1);
+        LCD.setCursor(13, 0);
+        LCD.print(")");
+        LCD.setCursor(0, 1);
+        LCD.print(gasDens);
+        LCD.setCursor(6, 1);
         LCD.print("ppm");
     }
 
     if (isMute == 1) {
-        LCD.setCursor(15, 1);
-        LCD.print("M");
+        LCD.setCursor(13, 1);
+        LCD.print("*M*");
     }
     else if (isMute == 0) {
-        LCD.setCursor(15, 1);
-        LCD.print(" ");
+        LCD.setCursor(13, 1);
+        LCD.print("   ");
     }
 
     tLCDPrint = millis();
@@ -212,10 +218,10 @@ bool checkMute() {
     bool tempisBtnMuteRel = digitalRead(BTN_MUTE)
     if (isBtnMuteRel == 1 && tempisBtnMuteRel == 0) {
         isMute = !isMute;
-        isBtnMuteRel = 0;
+        isBtnMuteRel = tempisBtnMuteRel;
     }
     else if (tempisBtnMuteRel == 1) {
-        isBtnMuteRel = 1;
+        isBtnMuteRel = tempisBtnMuteRel;
     }
     return isMute;
 }
