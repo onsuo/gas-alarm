@@ -41,13 +41,13 @@ float v40000 = 3.206;
 
 int checkGasLevel();
 bool checkEmergency(int gasLevel);
-void printLCD(int gasLevel, int isMute);
+void printLCD(int gasLevel, int gasDens, int isMute);
 void printRGB(int r, int g, int b);
 void printLED(int gasLevel);
 bool checkStop();
 bool checkMute();
 void manageBuzz(int gasLevel);
-void manageFan();
+void manageFan(bool isEmergency);
 
 void setup() 
 {
@@ -127,14 +127,14 @@ bool checkEmergency(int gasLevel) {
     return 0;
 }
 
-void printLCD(int gasLevel, int isMute) {
+void printLCD(int gasLevel, int gasDens, int isMute) {
     unsigned long temptLCDPrint = millis();
     if (temptLCDPrint - tLCDPrint >= 500) {
         LCD.clear();
         LCD.setCursor(0, 0);
         LCD.print("CO2");
         LCD.setCursor(4, 0);
-        LCD.print("(Level: ")
+        LCD.print("(Level: ");
         LCD.setCursor(12, 0);
         LCD.print(gasLevel);
         LCD.setCursor(13, 0);
@@ -215,7 +215,7 @@ bool checkStop() {
 }
 
 bool checkMute() {
-    bool tempisBtnMuteRel = digitalRead(BTN_MUTE)
+    bool tempisBtnMuteRel = digitalRead(BTN_MUTE);
     if (isBtnMuteRel == 1 && tempisBtnMuteRel == 0) {
         isMute = !isMute;
         isBtnMuteRel = tempisBtnMuteRel;
@@ -238,7 +238,7 @@ void manageBuzz(int gasLevel) {
             BuzzOn = 1;
             tBuzz = millis();
         }
-        else if (gap >= 500 && isLEDOn == 1) {
+        else if (gap >= 500 && BuzzOn == 1) {
             BuzzOn = 0;
             tBuzz = millis();
         }
@@ -248,7 +248,7 @@ void manageBuzz(int gasLevel) {
             BuzzOn = 1;
             tBuzz = millis();
         }
-        else if (gap >= 250 && isLEDOn == 1) {
+        else if (gap >= 250 && BuzzOn == 1) {
             BuzzOn = 0;
             tBuzz = millis();
         }
@@ -263,7 +263,7 @@ void manageBuzz(int gasLevel) {
     return;
 }
 
-void manageFan() {
+void manageFan(bool isEmergency) {
     if (isEmergency == 1 || (isFanOn == 1 && gasLevel >=3)) {
         isFanOn = 1;
     }
