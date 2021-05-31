@@ -62,6 +62,7 @@ void setup()
     pinMode(BTN_STOP, INPUT_PULLUP);
     pinMode(BTN_MUTE, INPUT_PULLUP);
     gas.begin(v400, v40000);
+    gas.calibrate();
     LCD.begin();
     LCD.backlight();
 
@@ -144,6 +145,7 @@ void printLCD(int gasLevel, int gasDens, int isMute) {
         LCD.print(gasDens);
         LCD.setCursor(6, 1);
         LCD.print("ppm");
+        tLCDPrint = millis();
     }
 
     if (isMute == 1) {
@@ -155,7 +157,6 @@ void printLCD(int gasLevel, int gasDens, int isMute) {
         LCD.print("   ");
     }
 
-    tLCDPrint = millis();
 
     return;
 }
