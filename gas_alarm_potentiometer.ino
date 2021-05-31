@@ -7,7 +7,7 @@
     핀번호 설정 필요
     적혀있는 핀 번호는 기본 설정값임
 */
-// Potentiometer
+// Potentiometer (이산화탄소 센서 대체)
 #define     Poten           A0
 // RGB LED (KY-016)
 #define     LED_R           9   // ~
