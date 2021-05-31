@@ -27,6 +27,7 @@ LiquidCrystal_I2C LCD(0x27, 16, 2);
 
 int gasDensArray[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 };
 int gasLevel = 0;
+bool isLEDOn = 0;
 bool isBtnMuteRel = 1;
 bool isMute = 0;
 bool isFanOn = 0;
@@ -168,7 +169,6 @@ void printRGB(int r, int g, int b) {
 }
 
 void printLED(int gasLevel) {
-    bool isLEDOn = 0;
     unsigned long temptLED = millis();
     unsigned long gap = temptLED - tLED;
     /*
@@ -188,13 +188,13 @@ void printLED(int gasLevel) {
             printRGB(0, 0, 0);
         }
         else if (gasLevel == 1) {
-            printRGB(0, 255, 0);
+            printRGB(0, 128, 0);
         }
         else if (gasLevel == 2) {
-            printRGB(128, 128, 0);
+            printRGB(64, 164, 0);
         }
         else if (gasLevel >= 3) {
-            printRGB(255, 0, 0);
+            printRGB(128, 0, 0);
         }
     }
     else {

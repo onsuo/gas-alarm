@@ -184,13 +184,13 @@ void printLED(int gasLevel) {
             printRGB(0, 0, 0);
         }
         else if (gasLevel == 1) {
-            printRGB(0, 255, 0);
+            printRGB(0, 128, 0);
         }
         else if (gasLevel == 2) {
-            printRGB(128, 128, 0);
+            printRGB(64, 64, 0);
         }
         else if (gasLevel >= 3) {
-            printRGB(255, 0, 0);
+            printRGB(128, 0, 0);
         }
     }
     else {
