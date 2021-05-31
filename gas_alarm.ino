@@ -63,6 +63,7 @@ void setup()
     pinMode(BTN_MUTE, INPUT_PULLUP);
     gas.begin(v400, v40000);
     LCD.begin();
+    LCD.backlight();
 
     tLCDMode = millis();
     tLCDPrint = millis();
