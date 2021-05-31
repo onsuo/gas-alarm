@@ -80,12 +80,12 @@ void loop()
     bool isStop = checkStop(); // 알람 중단 확인, 중단 시간 확인
     isMute = checkMute(); // 무음모드 여부 확인
 
-    printLCD(gasLevel, isMute); // LCD 정보 제공
+    printLCD(gasLevel, gasDens, isMute); // LCD 정보 제공
     printLED(gasLevel); // LED 점멸
     if ((isStop == 0 && isMute == 0) || isEmergency == 1) {
         manageBuzz(gasLevel); // 가스 농도에 따른 버저 울림
     }
-    manageFan(); // 위급상황 -> 팬 작동(gasLevel 3 까지)
+    manageFan(isEmergency); // 위급상황 -> 팬 작동(gasLevel 3 까지)
 }
 
 int checkGasLevel(float gasDens) {
