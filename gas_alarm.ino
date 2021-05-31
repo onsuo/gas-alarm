@@ -8,7 +8,7 @@
     적혀있는 핀 번호는 기본 설정값임
 */
 // CO2 Sensor (MG811)
-MG811 gas = MG811(A0)
+MG811 gas = MG811(A0);
 // RGB LED (KY-016)
 #define     LED_R           9   // ~
 #define     LED_G           10  // ~
@@ -41,7 +41,7 @@ float v40000 = 3.206;
 
 int checkGasLevel();
 bool checkEmergency(int gasLevel);
-void printLCD(int gasLevel,int isMute);
+void printLCD(int gasLevel, int isMute);
 void printRGB(int r, int g, int b);
 void printLED(int gasLevel);
 bool checkStop();
@@ -52,7 +52,6 @@ void manageFan();
 void setup() 
 {
     Serial.begin(9600);
-    pinMode(gas, INPUT);
     pinMode(LED_R, OUTPUT);
     pinMode(LED_G, OUTPUT);
     pinMode(LED_B, OUTPUT);
@@ -63,6 +62,7 @@ void setup()
     pinMode(BTN_STOP, INPUT_PULLUP);
     pinMode(BTN_MUTE, INPUT_PULLUP);
     gas.begin(v400, v40000);
+    LCD.begin();
 
     tLCDMode = millis();
     tLCDPrint = millis();
