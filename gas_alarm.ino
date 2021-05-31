@@ -16,14 +16,14 @@ MG811 gas = MG811(A0);
 // LCD (I2C LCD 1602)
 LiquidCrystal_I2C LCD(0x27, 16, 2);
 // Buzzer (Piezo Buzzer Active)
-#define     BUZZER          
+#define     BUZZER          2
 // Motor Driver (SZH-MDBL-002)
 #define     FAN1            5   // ~
 #define     FAN2            6   // ~
 // Button
-#define     BTN_LCD         
-#define     BTN_STOP        
-#define     BTN_MUTE        
+#define     BTN_LCD         4
+#define     BTN_STOP        7
+#define     BTN_MUTE        8
 
 int gasDensArray[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 };
 int gasLevel = 0;
