@@ -24,11 +24,11 @@ LiquidCrystal_I2C LCD(0x27, 16, 2);
 #define     BTN_MUTE        8
 
 // hysteresis 기준
-#define threshold1 200
-#define threshold2 400
-#define threshold3 600
-#define threshold4 800
-#define buffer 20
+#define threshold1 700
+#define threshold2 1000
+#define threshold3 2000
+#define threshold4 3000
+#define buffer 50
 
 int gasDensArray[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 };
 int gasLevel = 0;
@@ -69,7 +69,7 @@ void setup()
 
 void loop() 
 {
-    int gasDens = analogRead(Poten); // 가스 농도 ppm 확인
+    int gasDens = analogRead(Poten) * 3.5; // 가스 농도 ppm 확인
 
     /*
         > gasLevel = checkGasLevel(gasDens); // 가스 농도 단계 확인
