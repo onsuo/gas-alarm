@@ -63,7 +63,6 @@ void setup()
     pinMode(BUZZER, OUTPUT);
     pinMode(FAN1, OUTPUT);
     pinMode(FAN2, OUTPUT);
-    pinMode(BTN_LCD, INPUT_PULLUP);
     pinMode(BTN_STOP, INPUT_PULLUP);
     pinMode(BTN_MUTE, INPUT_PULLUP);
     LCD.begin();
