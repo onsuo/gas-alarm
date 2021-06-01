@@ -25,6 +25,12 @@ LiquidCrystal_I2C LCD(0x27, 16, 2);
 #define     BTN_STOP        7
 #define     BTN_MUTE        8
 
+#define threshold1 200
+#define threshold2 400
+#define threshold3 600
+#define threshold4 800
+#define buffer 20
+
 int gasDensArray[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 };
 int gasLevel = 0;
 bool isLEDOn = 0;
@@ -101,19 +107,19 @@ int checkGasLevel(float gasDens) {
     float aveGasDens = (float)sum / 10; // loop 10번 이상 돌아야 정상 작동
     
     // hysteresis : 경계 문턱 2개 -> 상 문턱 : 알림 단계 높임 / 하 문턱 : 알림 단계 낮춤
-    if (aveGasDens < 180 && gasLevel >= 1) {
+    if (aveGasDens < threshold1 - buffer && gasLevel >= 1) {
         gasLevel = 0;
     }
-    else if ((aveGasDens > 220 && gasLevel <= 0) || (aveGasDens < 380 && gasLevel >= 2)) {
+    else if ((aveGasDens > threshold1 + buffer && gasLevel <= 0) || (aveGasDens < threshold2 - buffer && gasLevel >= 2)) {
         gasLevel = 1;
     }
-    else if ((aveGasDens > 420 && gasLevel <= 1) || (aveGasDens < 580 && gasLevel >= 3)) {
+    else if ((aveGasDens > threshold2 + buffer && gasLevel <= 1) || (aveGasDens < threshold3 - buffer && gasLevel >= 3)) {
         gasLevel = 2;
     }
-    else if ((aveGasDens > 620 && gasLevel <= 2) || (aveGasDens < 780 && gasLevel >= 4)) {
+    else if ((aveGasDens > threshold3 + buffer && gasLevel <= 2) || (aveGasDens < threshold4 - buffer && gasLevel >= 4)) {
         gasLevel = 3;
     }
-    else if (aveGasDens > 820 && gasLevel <= 3) {
+    else if (aveGasDens > threshold4 + buffer && gasLevel <= 3) {
         gasLevel = 4;
     }
     return gasLevel;
