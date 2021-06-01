@@ -21,7 +21,6 @@ LiquidCrystal_I2C LCD(0x27, 16, 2);
 #define     FAN1            5   // ~
 #define     FAN2            6   // ~
 // Button
-#define     BTN_LCD         4
 #define     BTN_STOP        7
 #define     BTN_MUTE        8
 
@@ -44,10 +43,15 @@ unsigned long tLED;
 unsigned long tBuzzStop;
 unsigned long tBuzz;
 
+int checkGasLevel();
 bool checkEmergency(int gasLevel);
+void printLCD(int gasLevel, int gasDens, int isMute);
 void printRGB(int r, int g, int b);
+void printLED(int gasLevel);
 bool checkStop();
 bool checkMute();
+void manageBuzz(int gasLevel);
+void manageFan(bool isEmergency);
 
 void setup() 
 {
@@ -75,7 +79,21 @@ void setup()
 void loop() 
 {
     int gasDens = analogRead(Poten); // 가스 농도 ppm 확인
+    gasLevel = checkGasLevel(gasDens); // 가스 농도 단계 확인
+    bool isEmergency = checkEmergency(gasLevel); // 위급상황 확인
+    
+    bool isStop = checkStop(); // 알람 중단 확인, 중단 시간 확인
+    isMute = checkMute(); // 무음모드 여부 확인
 
+    printLCD(gasLevel, gasDens, isMute); // LCD 정보 제공
+    printLED(gasLevel); // LED 점멸
+    if ((isStop == 0 && isMute == 0) || isEmergency == 1) {
+        manageBuzz(gasLevel); // 가스 농도에 따른 버저 울림
+    }
+    manageFan(isEmergency); // 위급상황 -> 팬 작동(gasLevel 3 까지)
+}
+
+int checkGasLevel(float gasDens) {
     // averaging
     for (int i = 0; i < 10 - 1; i++) { // 저장된 값을 한칸씩 앞으로 당김
         gasDensArray[i] = gasDensArray[i + 1];
@@ -104,12 +122,17 @@ void loop()
     else if (aveGasDens > threshold4 + buffer && gasLevel <= 3) {
         gasLevel = 4;
     }
+    return gasLevel;
+}
 
-    bool isEmergency = checkEmergency(gasLevel); // 위급상황 확인
-    
-    bool isStop = checkStop(); // 알람 중단 확인, 중단 시간 확인
-    isMute = checkMute(); // 무음모드 여부 확인
+bool checkEmergency(int gasLevel) {
+    if (gasLevel == 4) {
+        return 1;
+    }
+    return 0;
+}
 
+void printLCD(int gasLevel, int gasDens, int isMute) {
     unsigned long temptLCDPrint = millis();
     if (temptLCDPrint - tLCDPrint >= 500) {
         LCD.clear();
@@ -137,6 +160,17 @@ void loop()
         LCD.print("   ");
     }
 
+
+    return;
+}
+
+void printRGB(int r, int g, int b) {
+    analogWrite(LED_R, r);
+    analogWrite(LED_G, g);
+    analogWrite(LED_B, b);
+}
+
+void printLED(int gasLevel) {
     unsigned long temptLED = millis();
     unsigned long gap = temptLED - tLED;
     /*
@@ -168,71 +202,7 @@ void loop()
     else {
         printRGB(0, 0, 0);
     }
-
-    if ((isStop == 0 && isMute == 0) || isEmergency == 1) {
-        int BuzzOn = 0;
-        unsigned long temptBuzz = millis();
-        unsigned long gap = temptBuzz - tBuzz;
-        /*
-            gap 기준을 조절하여 버저 점멸 주기 조절 가능
-        */
-        if (gasLevel == 3) {
-            if (gap >= 150 && BuzzOn == 0) {
-                BuzzOn = 1;
-                tBuzz = millis();
-            }
-            else if (gap >= 500 && BuzzOn == 1) {
-                BuzzOn = 0;
-                tBuzz = millis();
-            }
-        }
-        else if (gasLevel == 4) {
-            if (gap >= 75 && BuzzOn == 0) {
-                BuzzOn = 1;
-                tBuzz = millis();
-            }
-            else if (gap >= 250 && BuzzOn == 1) {
-                BuzzOn = 0;
-                tBuzz = millis();
-            }
-        }
-
-        if (BuzzOn == 1) {
-            digitalWrite(BUZZER, 1);
-        }
-        else if (BuzzOn == 0) {
-            digitalWrite(BUZZER, 0);
-        }
-    }
-    
-    if (isEmergency == 1 || (isFanOn == 1 && gasLevel >=3)) {
-        isFanOn = 1;
-    }
-    else if (gasLevel < 3) {
-        isFanOn = 0;
-    }
-
-    if (isFanOn == 1) {
-        digitalWrite(FAN1, 1);
-        digitalWrite(FAN2, 0);
-    }
-    else if (isFanOn == 0) {
-        digitalWrite(FAN1, 0);
-        digitalWrite(FAN2, 0);
-    }
-}
-
-bool checkEmergency(int gasLevel) {
-    if (gasLevel == 4) {
-        return 1;
-    }
-    return 0;
-}
-
-void printRGB(int r, int g, int b) {
-    analogWrite(LED_R, r);
-    analogWrite(LED_G, g);
-    analogWrite(LED_B, b);
+    return;
 }
 
 bool checkStop() {
@@ -258,4 +228,60 @@ bool checkMute() {
         isBtnMuteRel = tempisBtnMuteRel;
     }
     return isMute;
+}
+
+void manageBuzz(int gasLevel) {
+    int BuzzOn = 0;
+    unsigned long temptBuzz = millis();
+    unsigned long gap = temptBuzz - tBuzz;
+    /*
+        gap 기준을 조절하여 버저 점멸 주기 조절 가능
+    */
+    if (gasLevel == 3) {
+        if (gap >= 150 && BuzzOn == 0) {
+            BuzzOn = 1;
+            tBuzz = millis();
+        }
+        else if (gap >= 500 && BuzzOn == 1) {
+            BuzzOn = 0;
+            tBuzz = millis();
+        }
+    }
+    else if (gasLevel == 4) {
+        if (gap >= 75 && BuzzOn == 0) {
+            BuzzOn = 1;
+            tBuzz = millis();
+        }
+        else if (gap >= 250 && BuzzOn == 1) {
+            BuzzOn = 0;
+            tBuzz = millis();
+        }
+    }
+
+    if (BuzzOn == 1) {
+        digitalWrite(BUZZER, 1);
+    }
+    else if (BuzzOn == 0) {
+        digitalWrite(BUZZER, 0);
+    }
+    return;
+}
+
+void manageFan(bool isEmergency) {
+    if (isEmergency == 1 || (isFanOn == 1 && gasLevel >=3)) {
+        isFanOn = 1;
+    }
+    else if (gasLevel < 3) {
+        isFanOn = 0;
+    }
+
+    if (isFanOn == 1) {
+        digitalWrite(FAN1, 1);
+        digitalWrite(FAN2, 0);
+    }
+    else if (isFanOn == 0) {
+        digitalWrite(FAN1, 0);
+        digitalWrite(FAN2, 0);
+    }
+    return;
 }
