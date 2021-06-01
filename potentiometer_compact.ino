@@ -37,7 +37,6 @@ bool isLEDOn = 0;
 bool isBtnMuteRel = 1;
 bool isMute = 0;
 bool isFanOn = 0;
-unsigned long tLCDMode;
 unsigned long tLCDPrint;
 unsigned long tLED;
 unsigned long tBuzzStop;
@@ -63,7 +62,6 @@ void setup()
     LCD.begin();
     LCD.backlight();
 
-    tLCDMode = millis();
     tLCDPrint = millis();
     tLED = millis();
     tBuzzStop = millis();
