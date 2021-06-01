@@ -17,7 +17,7 @@ MG811 gas = MG811(A0);
 LiquidCrystal_I2C LCD(0x27, 16, 2);
 // Buzzer (Piezo Buzzer Active)
 #define     BUZZER          2
-// Motor Driver (SZH-MDBL-002)
+// Fan (SZH-EK061)
 #define     FAN1            5   // ~
 #define     FAN2            6   // ~
 // Button
@@ -33,13 +33,13 @@ LiquidCrystal_I2C LCD(0x27, 16, 2);
 
 int gasDensArray[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 };
 int gasLevel = 0;
-bool isLEDOn = 0;
 bool isBtnMuteRel = 1;
 bool isMute = 0;
+bool isLEDOn = 0;
 bool isFanOn = 0;
+unsigned long tBuzzStop;
 unsigned long tLCDPrint;
 unsigned long tLED;
-unsigned long tBuzzStop;
 unsigned long tBuzz;
 
 float v400 = 4.535;
@@ -47,11 +47,11 @@ float v40000 = 3.206;
 
 int checkGasLevel();
 bool checkEmergency(int gasLevel);
+bool checkStop();
+bool checkMute();
 void printLCD(int gasLevel, int gasDens, int isMute);
 void printRGB(int r, int g, int b);
 void printLED(int gasLevel);
-bool checkStop();
-bool checkMute();
 void manageBuzz(int gasLevel);
 void manageFan(bool isEmergency);
 
@@ -71,9 +71,9 @@ void setup()
     LCD.begin();
     LCD.backlight();
 
+    tBuzzStop = millis();
     tLCDPrint = millis();
     tLED = millis();
-    tBuzzStop = millis();
     tBuzz = millis();
 }
 
@@ -131,6 +131,31 @@ bool checkEmergency(int gasLevel) {
         return 1;
     }
     return 0;
+}
+
+bool checkStop() {
+    unsigned long temptBuzzStop = millis();
+    // 버튼 누름
+    if (digitalRead(BTN_STOP) == 0) {
+        tBuzzStop = millis();
+        return 1;
+    }
+    // 2분(120초) 경과 후
+    else if (temptBuzzStop - tBuzzStop >= 120000) {
+        return 0;
+    }
+}
+
+bool checkMute() {
+    bool tempisBtnMuteRel = digitalRead(BTN_MUTE);
+    if (isBtnMuteRel == 1 && tempisBtnMuteRel == 0) {
+        isMute = !isMute;
+        isBtnMuteRel = tempisBtnMuteRel;
+    }
+    else if (tempisBtnMuteRel == 1) {
+        isBtnMuteRel = tempisBtnMuteRel;
+    }
+    return isMute;
 }
 
 void printLCD(int gasLevel, int gasDens, int isMute) {
@@ -204,31 +229,6 @@ void printLED(int gasLevel) {
         printRGB(0, 0, 0);
     }
     return;
-}
-
-bool checkStop() {
-    unsigned long temptBuzzStop = millis();
-    // 버튼 누름
-    if (digitalRead(BTN_STOP) == 0) {
-        tBuzzStop = millis();
-        return 1;
-    }
-    // 2분(120초) 경과 후
-    else if (temptBuzzStop - tBuzzStop >= 120000) {
-        return 0;
-    }
-}
-
-bool checkMute() {
-    bool tempisBtnMuteRel = digitalRead(BTN_MUTE);
-    if (isBtnMuteRel == 1 && tempisBtnMuteRel == 0) {
-        isMute = !isMute;
-        isBtnMuteRel = tempisBtnMuteRel;
-    }
-    else if (tempisBtnMuteRel == 1) {
-        isBtnMuteRel = tempisBtnMuteRel;
-    }
-    return isMute;
 }
 
 void manageBuzz(int gasLevel) {

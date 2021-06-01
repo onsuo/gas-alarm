@@ -17,7 +17,7 @@ MG811 gas = MG811(A0);
 LiquidCrystal_I2C LCD(0x27, 16, 2);
 // Buzzer (Piezo Buzzer Active)
 #define     BUZZER          2
-// Motor Driver (SZH-MDBL-002)
+// Fan (SZH-EK061)
 #define     FAN1            5   // ~
 #define     FAN2            6   // ~
 // Button
@@ -33,22 +33,22 @@ LiquidCrystal_I2C LCD(0x27, 16, 2);
 
 int gasDensArray[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 };
 int gasLevel = 0;
-bool isLEDOn = 0;
 bool isBtnMuteRel = 1;
 bool isMute = 0;
+bool isLEDOn = 0;
 bool isFanOn = 0;
+unsigned long tBuzzStop;
 unsigned long tLCDPrint;
 unsigned long tLED;
-unsigned long tBuzzStop;
 unsigned long tBuzz;
 
 float v400 = 4.535;
 float v40000 = 3.206;
 
 bool checkEmergency(int gasLevel);
-void printRGB(int r, int g, int b);
 bool checkStop();
 bool checkMute();
+void printRGB(int r, int g, int b);
 
 void setup() 
 {
@@ -66,9 +66,9 @@ void setup()
     LCD.begin();
     LCD.backlight();
 
+    tBuzzStop = millis();
     tLCDPrint = millis();
     tLED = millis();
-    tBuzzStop = millis();
     tBuzz = millis();
 }
 
@@ -111,6 +111,7 @@ void loop()
     bool isEmergency = checkEmergency(gasLevel); // 위급상황 확인
     
     bool isStop = checkStop(); // 알람 중단 확인, 중단 시간 확인
+    
     isMute = checkMute(); // 무음모드 여부 확인
 
     /*
@@ -244,12 +245,6 @@ bool checkEmergency(int gasLevel) {
     return 0;
 }
 
-void printRGB(int r, int g, int b) {
-    analogWrite(LED_R, r);
-    analogWrite(LED_G, g);
-    analogWrite(LED_B, b);
-}
-
 bool checkStop() {
     unsigned long temptBuzzStop = millis();
     // 버튼 누름
@@ -273,4 +268,10 @@ bool checkMute() {
         isBtnMuteRel = tempisBtnMuteRel;
     }
     return isMute;
+}
+
+void printRGB(int r, int g, int b) {
+    analogWrite(LED_R, r);
+    analogWrite(LED_G, g);
+    analogWrite(LED_B, b);
 }
