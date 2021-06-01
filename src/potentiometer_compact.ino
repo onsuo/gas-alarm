@@ -7,7 +7,7 @@
     적혀있는 핀 번호는 기본 설정값임
 */
 // Potentiometer (이산화탄소 센서 대체)
-#define     Poten           A0
+#define     POT           A0
 // RGB LED (KY-016)
 #define     LED_R           9   // ~
 #define     LED_G           10  // ~
@@ -49,7 +49,7 @@ void printRGB(int r, int g, int b);
 void setup() 
 {
     Serial.begin(9600);
-    pinMode(Poten, INPUT);
+    pinMode(POT, INPUT);
     pinMode(LED_R, OUTPUT);
     pinMode(LED_G, OUTPUT);
     pinMode(LED_B, OUTPUT);
@@ -69,7 +69,7 @@ void setup()
 
 void loop() 
 {
-    int gasDens = analogRead(Poten) * 3.5; // 가스 농도 ppm 확인
+    int gasDens = analogRead(POT) * 3.5; // 가스 농도 ppm 확인
 
     /*
         > gasLevel = checkGasLevel(gasDens); // 가스 농도 단계 확인
